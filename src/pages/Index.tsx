@@ -2,8 +2,55 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import Icon from "@/components/ui/icon";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { useState } from "react";
 
 const Index = () => {
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    message: ""
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!formData.name || !formData.email || !formData.message) {
+      toast({
+        title: "Ошибка",
+        description: "Заполните все обязательные поля",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(formData.email)) {
+      toast({
+        title: "Ошибка",
+        description: "Введите корректный email",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    toast({
+      title: "Заявка отправлена!",
+      description: "Мы свяжемся с вами в течение 24 часов"
+    });
+    
+    setFormData({ name: "", email: "", phone: "", message: "" });
+    setIsSubmitting(false);
+  };
   const sections = [
     {
       number: "01",
@@ -274,16 +321,78 @@ const Index = () => {
                             Заполните форму, и мы проведем первичную диагностику вашей задачи. 
                             Ответим в течение 24 часов.
                           </p>
-                          <div className="flex gap-4 flex-col sm:flex-row">
-                            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                              <Icon name="Mail" className="mr-2" size={20} />
-                              Отправить заявку
-                            </Button>
-                            <Button variant="outline" className="border-primary/30 hover:bg-primary/10">
-                              <Icon name="Phone" className="mr-2" size={20} />
-                              Позвонить
-                            </Button>
-                          </div>
+                          
+                          <form onSubmit={handleSubmit} className="space-y-4">
+                            <div className="grid md:grid-cols-2 gap-4">
+                              <div>
+                                <label className="text-sm font-medium mb-2 block">Имя *</label>
+                                <Input
+                                  placeholder="Иван Иванов"
+                                  value={formData.name}
+                                  onChange={(e) => setFormData({...formData, name: e.target.value})}
+                                  className="bg-background border-border/50"
+                                  required
+                                />
+                              </div>
+                              <div>
+                                <label className="text-sm font-medium mb-2 block">Email *</label>
+                                <Input
+                                  type="email"
+                                  placeholder="ivan@example.com"
+                                  value={formData.email}
+                                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                                  className="bg-background border-border/50"
+                                  required
+                                />
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <label className="text-sm font-medium mb-2 block">Телефон</label>
+                              <Input
+                                type="tel"
+                                placeholder="+7 (999) 123-45-67"
+                                value={formData.phone}
+                                onChange={(e) => setFormData({...formData, phone: e.target.value})}
+                                className="bg-background border-border/50"
+                              />
+                            </div>
+                            
+                            <div>
+                              <label className="text-sm font-medium mb-2 block">Описание задачи *</label>
+                              <Textarea
+                                placeholder="Опишите вашу задачу или проблему..."
+                                value={formData.message}
+                                onChange={(e) => setFormData({...formData, message: e.target.value})}
+                                className="bg-background border-border/50 min-h-[120px]"
+                                required
+                              />
+                            </div>
+                            
+                            <div className="flex gap-4 flex-col sm:flex-row">
+                              <Button 
+                                type="submit" 
+                                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                                disabled={isSubmitting}
+                              >
+                                {isSubmitting ? (
+                                  <>
+                                    <Icon name="Loader2" className="mr-2 animate-spin" size={20} />
+                                    Отправка...
+                                  </>
+                                ) : (
+                                  <>
+                                    <Icon name="Mail" className="mr-2" size={20} />
+                                    Отправить заявку
+                                  </>
+                                )}
+                              </Button>
+                              <Button type="button" variant="outline" className="border-primary/30 hover:bg-primary/10">
+                                <Icon name="Phone" className="mr-2" size={20} />
+                                Позвонить
+                              </Button>
+                            </div>
+                          </form>
                         </div>
                       </Card>
                     )}
